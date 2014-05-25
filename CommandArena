@@ -1,0 +1,127 @@
+package me.rafagatofofo.PvPMinigame.Commands;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import me.rafagatofofo.PvPMinigame.Core;
+import net.amigocraft.mglib.exception.ArenaExistsException;
+import net.amigocraft.mglib.exception.InvalidLocationException;
+
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+public class CommandArena implements CommandExecutor {
+	
+	public static Map<Integer, Location> Locations = new HashMap<Integer, Location>();
+	public static Map<String, List<Location>> Arenas = new HashMap<String, List<Location>>();
+
+	public static ItemMeta wandMeta(){
+		ItemStack wand = new ItemStack(Material.FLINT);
+		ItemMeta wandMeta = wand.getItemMeta();
+		List<String> loreList = new ArrayList<String>();
+		loreList.add(Core.TAG+"Use this to select your Arena");
+		wandMeta.setDisplayName(Core.TAG+"Wand §8(Left/Right Click)");
+		wandMeta.setLore(loreList);
+		return wandMeta;
+	}
+	
+	public void giveWand(Player player){		
+		if(player.getInventory().firstEmpty() == -1){
+			player.sendMessage(Core.TAG+"Your backpack is full!");
+			return;
+		}
+		ItemStack wand = new ItemStack(Material.FLINT);
+		wand.setItemMeta(wandMeta());
+		player.getInventory().addItem(wand);
+		player.sendMessage(Core.TAG+"Left Click to select Pos1");
+		player.sendMessage(Core.TAG+"Right Click to select Pos2");
+		return;
+	}
+	
+	@Override
+	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel,
+			String[] args) {
+		if(!(sender instanceof Player)){
+			sender.sendMessage(Core.TAG+"You need to be a player to use this command.");
+			return true;
+		}
+		Player player = (Player)sender;
+		
+		if (args.length == 0){
+			player.sendMessage(Core.TAG+"Usage: /ArenaPvP new <name>");
+			player.sendMessage(Core.TAG+"Type: /ArenaPvP info");
+			return true;
+		}
+		
+		if (args[0].equalsIgnoreCase("join")){
+		}
+		
+		if (args[0].equalsIgnoreCase("info")){
+			player.sendMessage(Core.TAG+"Use the /ArenaPvP Wand command to select your arena.");
+			player.sendMessage(Core.TAG+"The coordinates you create the arena will be the main spawn for that arena.");
+			return true;
+		}
+		
+		if (args[0].equalsIgnoreCase("list")){
+			List<String> names = new ArrayList<String>();
+			for ( String key : Arenas.keySet() ) {
+			    names.add(key);
+			}
+			if (names.size() == 0){
+				player.sendMessage(Core.TAG+"§cThere are no arenas saved");
+				return true;
+			}
+			for (int i=0 ; i< names.size(); i++){
+				player.sendMessage(Core.TAG+"§6Arena "+i+": §e"+names.get(i));
+			}
+			return true;
+		}
+		
+		if (args[0].equalsIgnoreCase("wand")){
+			giveWand(player);
+			return true;
+		}
+		
+		if (args[0].equalsIgnoreCase("new") && args.length == 2){
+			String arenaName = args[1];
+			try {
+				Core.mg.createArena(arenaName, player.getLocation(), Locations.get(1), Locations.get(2));
+				List<Location> ArenaLocations = new ArrayList<Location>();
+				ArenaLocations.add(Locations.get(1));
+				ArenaLocations.add(Locations.get(2));
+				Arenas.put(arenaName, ArenaLocations);
+				player.sendMessage(Core.TAG+"Arena "+arenaName+" has been created!");
+				return true;
+			} catch (InvalidLocationException e) {
+				player.sendMessage(Core.TAG+"Invalid Location");
+				e.printStackTrace();
+			} catch (ArenaExistsException e) {
+				player.sendMessage(Core.TAG+"The arena "+arenaName+" already exists!");
+				e.printStackTrace();
+			}
+			return true;
+		}
+		
+		if (args[0].equalsIgnoreCase("test")){
+			if (player.getInventory().getItemInHand().getItemMeta().equals(wandMeta())){
+				player.sendMessage("This is a wand.");
+				return true;
+			}
+			player.sendMessage("This is not a wand.");
+			return true;
+		}
+		
+		player.sendMessage(Core.TAG+"Usage: /ArenaPvP new <name>");
+		player.sendMessage(Core.TAG+"Type: /ArenaPvP info");
+		return false;
+	}
+
+}
