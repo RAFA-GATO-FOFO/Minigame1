@@ -1,0 +1,35 @@
+package me.rafagatofofo.PvPMinigame;
+
+import me.rafagatofofo.PvPMinigame.Commands.CommandArena;
+import me.rafagatofofo.PvPMinigame.Listeners.BlockListener;
+import me.rafagatofofo.PvPMinigame.Listeners.PlayerInteractListener;
+import net.amigocraft.mglib.api.MGPlayer;
+import net.amigocraft.mglib.api.Minigame;
+import net.amigocraft.mglib.api.Round;
+
+import org.bukkit.Location;
+import org.bukkit.plugin.java.JavaPlugin;
+
+public class Core extends JavaPlugin {
+	
+	public static Minigame mg;
+	public static MGPlayer mgplayer;
+	public static Round round;
+	public static final String TAG = "§8[§ePvP§8] §2";
+	
+	@Override
+	public void onEnable() {
+		getLogger().info(TAG+"Enabled!");
+		mg = Minigame.registerPlugin(this);
+		getCommand("arenapvp").setExecutor(new CommandArena());
+		getServer().getPluginManager().registerEvents(new PlayerInteractListener(), this);
+		getServer().getPluginManager().registerEvents(new BlockListener(), this);
+		CommandArena.Locations.put(1, new Location(getServer().getWorlds().get(0), 0, -1, 0));
+		CommandArena.Locations.put(2, new Location(getServer().getWorlds().get(0), 0, -1, 0));
+	}
+	@Override
+	public void onDisable() {
+		getLogger().info(TAG+"Disabled!");
+	}
+
+}
